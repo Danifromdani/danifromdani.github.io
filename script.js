@@ -34,7 +34,6 @@ function loadProjectContent(projectId) {
     // Esto sería para cuando implementes las páginas individuales de proyectos
     console.log(`Cargando proyecto: ${projectId}`);
 }
-
 // ===== FUNCIONALIDAD PARA LA SECCIÓN DE PEGATINAS =====
 
 // Modal de vista previa para pegatinas
@@ -50,6 +49,7 @@ function initializeStickerModal() {
     if (!modal) return;
 
     let currentStickerSrc = '';
+    let currentStickerName = '';
 
     // Abrir modal al hacer clic en una pegatina
     document.querySelectorAll('.sticker-item').forEach(item => {
@@ -62,8 +62,9 @@ function initializeStickerModal() {
             modalTitle.textContent = title;
             modalDescription.textContent = description;
             currentStickerSrc = img;
+            currentStickerName = title + '.jpg';
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+            document.body.style.overflow = 'hidden';
         });
     });
 
@@ -71,7 +72,7 @@ function initializeStickerModal() {
     if (closeModal) {
         closeModal.addEventListener('click', () => {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Restaurar scroll
+            document.body.style.overflow = 'auto';
         });
     }
 
@@ -79,7 +80,7 @@ function initializeStickerModal() {
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Restaurar scroll
+            document.body.style.overflow = 'auto';
         }
     });
 
@@ -87,31 +88,34 @@ function initializeStickerModal() {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && modal.style.display === 'flex') {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Restaurar scroll
+            document.body.style.overflow = 'auto';
         }
     });
 
-    // Funcionalidad de descarga
+    // Funcionalidad de descarga individual
     if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
             if (currentStickerSrc) {
-                downloadImage(currentStickerSrc, modalTitle.textContent + '.jpg');
+                downloadSticker(currentStickerSrc, currentStickerName);
             }
         });
     }
 }
 
-// Función para descargar imágenes
-function downloadImage(imageSrc, fileName) {
+// Función para descargar pegatina individual
+function downloadSticker(imageUrl, fileName) {
     // Crear un elemento anchor temporal
     const link = document.createElement('a');
-    link.href = imageSrc;
+    link.href = imageUrl;
     link.download = fileName;
     
-    // Simular clic en el enlace
+    // Añadir al documento y simular clic
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Opcional: Mostrar confirmación
+    console.log(`Descargando: ${fileName}`);
 }
 
 // Animaciones para las tarjetas de pegatinas
@@ -119,7 +123,6 @@ function initializeStickerAnimations() {
     const stickerItems = document.querySelectorAll('.sticker-item');
     
     stickerItems.forEach((item, index) => {
-        // Animación de entrada escalonada
         item.style.opacity = '0';
         item.style.transform = 'translateY(20px)';
         
@@ -145,27 +148,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Manejo de errores de imágenes
 document.addEventListener('DOMContentLoaded', function() {
-    const images = document.querySelectorAll('img');
+    const images = document.querySelectorAll('.sticker-image');
     
     images.forEach(img => {
         img.addEventListener('error', function() {
-            this.src = 'https://i.imgur.com/Uw721FE.png'; // Imagen de fallback
+            console.error(`Error cargando imagen: ${this.src}`);
+            this.src = 'https://i.imgur.com/Uw721FE.png';
             this.alt = 'Imagen no disponible';
+        });
+        
+        // Precargar imágenes para mejor experiencia
+        img.addEventListener('load', function() {
+            console.log(`Imagen cargada: ${this.src}`);
         });
     });
 });
 
-// Optimización para móviles
-function optimizeForMobile() {
-    if (window.innerWidth <= 768) {
-        // Optimizaciones específicas para móviles
-        const modalContent = document.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.style.padding = '20px';
-            modalContent.style.maxWidth = '95%';
-        }
+// El resto del código permanece igual...
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('header');
+    if (window.scrollY > 50) {
+        header.style.backgroundColor = '#222';
+        header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+    } else {
+        header.style.backgroundColor = '#333';
+        header.style.boxShadow = 'none';
     }
-}
+});
 
-window.addEventListener('resize', optimizeForMobile);
-window.addEventListener('load', optimizeForMobile);
+// Smooth scrolling para los enlaces del menú
+document.querySelectorAll('nav a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            window.scrollTo({
+                top: targetElement.offsetTop - 70,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
